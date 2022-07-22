@@ -1,6 +1,7 @@
 # seller-bot
 Telegram bot for selling accounts
 
+<a href="https://github.com/RoboSnowWorld/seller-bot-ru"><strong>На русском »</strong></a>
 # How to install
 * Enter your creditionals in **creditionals.txt**
 * Load your accounts in **accounts** folder
