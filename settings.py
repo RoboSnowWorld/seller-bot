@@ -1,6 +1,5 @@
-token = '5661730234:AAHkvsc8SdzUDaHiHPGpouzm3jXQFmPf1HI'
-admin_username = 'xtichkdydykiddt'
-currency = '$'
+token = 'your token'
+admin_username = 'your username'
 language = {
     'sell_accounts_button': 'Sell accounts ✅',
     'buy_accounts_button': 'Buy accounts ✅',
@@ -14,5 +13,5 @@ language = {
     'successful': 'Successful',
 
 }
-public_key = '48e7qUxn9T7RyYE1MVZswX1FRSbE6iyCj2gCRwwF3Dnh5XrasNTx3BGPiMsyXQFNKQhvukniQG8RTVhYm3iPs7kv8RVm8SGJ68yfGSJXGn4LoNJUd26XT89S7mXzrfGSHrqBEZ5n1Z7ad4XZgnFc8Raany3jVX6gEhTUFrVi1rJ7ANXLSAnfmnDE2uSqn'
-secret_key = 'eyJ2ZXJzaW9uIjoiUDJQIiwiZGF0YSI6eyJwYXlpbl9tZXJjaGFudF9zaXRlX3VpZCI6ImhheXZraC0wMCIsInVzZXJfaWQiOiI3OTAwNjQ0MTE5MyIsInNlY3JldCI6ImFiMGIwNWZiMGY5N2IzOTMzZjE4ODFjNjNkMmU2YjZmMjM3NmVhMzU1OGQ2YzkxYWJmZDIxNjFmZjE4MTU4OTQifX0='
+public_key = ''
+secret_key = ''

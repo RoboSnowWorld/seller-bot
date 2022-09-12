@@ -58,7 +58,7 @@ def buy_tokens(message):
     for account_type in account_types.keys():
         with open(f'accounts/{account_types[account_type]}') as f:
             price = f.readlines()[0].split(' ')[-1]
-        account_types_to_buy += f'{account_type} {price[:-1]}{s.currency}\n'
+        account_types_to_buy += f'{account_type} {price[:-1]}р\n'
     bot.send_message(message.chat.id, f'{account_types_to_buy}',
                                       reply_markup=trade_markup)
     bot.send_message(message.chat.id, s.language['buy_accounts'])
@@ -118,10 +118,10 @@ def buying_process(message):
             },
             "expirationDateTime": "2025-12-10T09:02:00+03:00",})
     payurl = r.json()['payUrl']
-    bot.send_message(message.chat.id, f'Your order number is {order_id}✅. Price: {to_pay}{s.currency}\n payment details: {payurl} 📝')
+    bot.send_message(message.chat.id, f'Your order number is {order_id}✅. Price: {to_pay}р\n payment details: {payurl} 📝')
     with open('admin_chat_id.txt') as f:
         admin_chat_id = int(f.read())
-    bot.send_message(admin_chat_id, f'{order_id} {account_name} 📝\n amount to pay {to_pay}{s.currency}\n accept_buy [order_id] to success ✅\n decline_buy [order_id] to decline ❌')
+    bot.send_message(admin_chat_id, f'{order_id} {account_name} 📝\n amount to pay {to_pay} р\n')
     counter = 0
     while counter < 1800:
         r = requests.get(url=f'https://api.qiwi.com/partner/bill/v1/bills/{order_id}',
