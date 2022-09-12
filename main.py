@@ -4,27 +4,28 @@
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
 import random
+import time
 
 import telebot
 
 import telebot
 import os
 from telebot import types
+import settings as s
+import requests
 
-bot = telebot.TeleBot('')
+bot = telebot.TeleBot(s.token)
 
 general_markup = telebot.types.ReplyKeyboardMarkup(row_width=2)
-generalbtn_1 = types.KeyboardButton('Sell accounts ✅')
-generalbtn_2 = types.KeyboardButton('Buy accounts 💰')
-generalbtn_3 = types.KeyboardButton('About ℹ')
+generalbtn_1 = types.KeyboardButton(s.language['sell_accounts_button'])
+generalbtn_2 = types.KeyboardButton(s.language['buy_accounts_button'])
+generalbtn_3 = types.KeyboardButton(s.language['about_button'])
 general_markup.add(generalbtn_1, generalbtn_2, generalbtn_3)
-admin_chat_id = ''
 admin_username = ''
 currency = '$'
-requisites = ''
 
 trade_markup = types.ReplyKeyboardMarkup(row_width=2)
-tradebtn_1 = types.KeyboardButton('Exit ❎')
+tradebtn_1 = types.KeyboardButton(s.language['exit_button'])
 trade_markup.add(tradebtn_1)
 
 account_types = {}
@@ -42,45 +43,38 @@ def load_accounts():
                 account_types[first_line.replace(f' {first_line.split(" ")[-1]}', '')] = folder
             except:
                 pass
-    with open ('requisites.txt') as f:
-        global requisites
-        for line in f.readlines():
-            requisites += line
 
-@bot.message_handler(regexp='chat_id')
-def get_chat_id(message):
-    if message.from_user.username != admin_username:
-        return
-    bot.send_message(message.chat.id, message.chat.id)
-
-@bot.message_handler(regexp='About ℹ')
+@bot.message_handler(regexp=s.language['about_button'])
 def bot_info(message):
-    bot.send_message(message.chat.id, 'Telegram bot for buying accounts\nSupport ')
+    bot.send_message(message.chat.id, s.language['support'])
 
-@bot.message_handler(regexp='Exit')
+@bot.message_handler(regexp=s.language['exit_button'])
 def command_exit(message):
     start_command(message)
 
-@bot.message_handler(regexp='Buy accounts 💰')
+@bot.message_handler(regexp=s.language['buy_accounts_button'])
 def buy_tokens(message):
     account_types_to_buy = ''
     for account_type in account_types.keys():
         with open(f'accounts/{account_types[account_type]}') as f:
             price = f.readlines()[0].split(' ')[-1]
-        account_types_to_buy += f'{account_type} {price[:-1]}{currency}\n'
+        account_types_to_buy += f'{account_type} {price[:-1]}{s.currency}\n'
     bot.send_message(message.chat.id, f'{account_types_to_buy}',
                                       reply_markup=trade_markup)
-    bot.send_message(message.chat.id, f'You can buy accounts using "ba [name] [number]\nsimple: ba simple_account 100')
+    bot.send_message(message.chat.id, s.language['buy_accounts'])
 
 @bot.message_handler(regexp='Sell accounts')
 def sell_tokens(message):
-    bot.send_message(message.chat.id, f'Send txt document with accounts and support will contact you',
+    bot.send_message(message.chat.id, s.language['sell_accounts'],
                                        reply_markup=trade_markup)
 
 
 @bot.message_handler(commands=['start'])
 def start_command(message):
     bot.send_message(message.chat.id, f'Hello, {message.from_user.username} ✋\nUsing this bot you can buy and sell accounts 💰', reply_markup=general_markup)
+    if message.from_user.username == s.admin_username:
+        with open('admin_chat_id.txt', 'w') as f:
+            f.write(str(message.chat.id))
 
 @bot.message_handler(regexp='ba')
 def buying_process(message):
@@ -91,12 +85,12 @@ def buying_process(message):
     try:
         account_types[account_name]
     except KeyError:
-        bot.send_message(message.chat.id, f'Sorry, Accounts not in stock')
+        bot.send_message(message.chat.id, s.language['accounts_not_in_stock'])
         return
     with open(f'accounts/{account_types[account_name]}') as f:
         counter = len(f.readlines()) - 1
         if counter < number:
-            bot.send_message(message.chat.id, 'Sorry, accounts not in stock')
+            bot.send_message(message.chat.id, s.language['accounts_not_in_stock'])
             return
     with open(f'accounts/{account_types[account_name]}') as f:
                 accounts = (f.readlines()[1:number + 1])
@@ -115,8 +109,32 @@ def buying_process(message):
     with open(f'accounts/{account_types[account_name]}') as f:
         price = f.readlines()[0].split(' ')[-1]
     to_pay = int(price) * number
-    bot.send_message(message.chat.id, f'Your order number is {order_id}✅. Price: {to_pay}{currency}\n payment details: {requisites}')
-    bot.send_message(admin_chat_id, f'{order_id} {account_name} 📝\n amount to pay {to_pay}{currency}\n accept_buy [order_id] to success ✅\n decline_buy [order_id] to decline ❌')
+    r = requests.put(url=f'https://api.qiwi.com/partner/bill/v1/bills/{order_id}',
+                     headers={'Authorization': f'Bearer {s.secret_key}', 'Content-Type': 'application/json',
+                              'Accept': 'application/json'}, json={
+            "amount": {
+                "currency": "RUB",
+                "value": to_pay
+            },
+            "expirationDateTime": "2025-12-10T09:02:00+03:00",})
+    payurl = r.json()['payUrl']
+    bot.send_message(message.chat.id, f'Your order number is {order_id}✅. Price: {to_pay}{s.currency}\n payment details: {payurl} 📝')
+    with open('admin_chat_id.txt') as f:
+        admin_chat_id = int(f.read())
+    bot.send_message(admin_chat_id, f'{order_id} {account_name} 📝\n amount to pay {to_pay}{s.currency}\n accept_buy [order_id] to success ✅\n decline_buy [order_id] to decline ❌')
+    counter = 0
+    while counter < 1800:
+        r = requests.get(url=f'https://api.qiwi.com/partner/bill/v1/bills/{order_id}',
+                         headers={'Authorization': f'Bearer {s.secret_key}'})
+        status = r.json()['status']['value']
+        if status == 'PAID':
+            accept_buy(order_id)
+            return
+        counter += 1
+        time.sleep(1)
+    decline_buy(order_id)
+
+
 
 @bot.message_handler(content_types=['document'])
 def selling_process(message):
@@ -127,16 +145,14 @@ def selling_process(message):
         f.write(bytes_file)
     with open(f'selling/{sell_id}.txt', 'a') as f:
         f.write(f'{message.from_user.username}\n')
+    with open('admin_chat_id.txt') as f:
+        admin_chat_id = int(f.read())
     bot.send_message(admin_chat_id, f'New selling from {message.from_user.username} 💰')
     with open(f'selling/{sell_id}.txt', 'rb') as f:
         bot.send_document(admin_chat_id, f)
-    bot.send_message(message.chat.id, 'Successful')
+    bot.send_message(message.chat.id, s.language['successful'])
 
-@bot.message_handler(regexp='accept_buy')
-def accept_buy(message):
-    if message.from_user.username != admin_username:
-        return
-    order_id = message.text.split(' ')[1]
+def accept_buy(order_id):
     with open(f'{order_id}.txt') as f:
         chat_id = f.readlines()[0]
     with open(f'{order_id}.txt', 'r') as source:
@@ -145,13 +161,9 @@ def accept_buy(message):
         dest.writelines(to_write)
     with open(f'{order_id}.txt', 'rb') as f:
         bot.send_document(chat_id, f)
-    bot.send_message(message.chat.id, 'Successful')
 
 @bot.message_handler(regexp='decline_buy')
-def decline_buy(message):
-    if message.from_user.username != admin_username:
-        return
-    order_id = message.text.split(' ')[1]
+def decline_buy(order_id):
     with open(f'{order_id}.txt') as f:
         accounts = f.readlines()[2:]
     with open(f'{order_id}.txt') as f:
@@ -160,10 +172,6 @@ def decline_buy(message):
     f_n = open(f'accounts/{account_types[account_name]}', 'a')
     for account in accounts:
         f_n.write(account)
-    bot.send_message(message.chat.id, 'Successful')
-
-
-
 
 while True:
     try:
