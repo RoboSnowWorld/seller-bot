@@ -1,9 +1,10 @@
 # seller-bot
-Telegram bot for selling accounts
+Telegram bot for selling accounts with qiwi support
 
 <a href="https://github.com/RoboSnowWorld/seller-bot-ru"><strong>На русском »</strong></a>
 # How to install
-* Enter your creditionals in **creditionals.txt**
+* get your p2p keys on https://qiwi.com/p2p-admin/transfers/api
+* Enter your public key and secret key in settings
 * Load your accounts in **accounts** folder
 * Write **tile** for accounts and **price** in the first line of each file
 ```
@@ -12,39 +13,23 @@ account_1
 account_2
 account_3
 ```
-* Enter your username in the main.py
+* Enter your username in the settings
 <img src="https://i.imgur.com/JjL5Mys.jpg" alt="From your telegram profile" width="320" height="160">
 
 ```
 admin_username = your username
 ```
-* Enter your bot token in the main.py
+* Enter your bot token in the settings
 ```
-bot = telebot.TeleBot('token')
+token = 'your token'
 ```
-* Run bot and send "chat_id" message
-
-<img src="https://i.imgur.com/nEwTAJC.jpg" alt="Exaple" width="320" height="160">
-
-* Enter answer in the main.py
+* Customize answers of bot in the settings
 ```
-admin_chat_id = 'answer'
-```
-* Customize answers of bot in the main.py
-```
-bot.send_message(message.chat.id, 'Telegram bot for buying accounts\nSupport [your contacts]')
-```
-* Enter your currency in main.py
-```
-currency = '$'
+language = {}
 ```
 
 # How to use
 * You will see a notification that someone bought accounts
-<img src="https://i.imgur.com/Hfb09yw.jpg" alt="Exaple" width="320" height="160">
+<img src="https://i.imgur.com/sDaHS4r.jpg" alt="Exaple" width="320" height="160">
 
-* You can send **accept_buy [order id]** if you received money
-<img src="https://i.imgur.com/0ZFOe4s.jpg" alt="Exaple" width="320" height="160">
-
-* You can send **decline_buy [order_id]** if you didn't received money
-<img src="https://i.imgur.com/GGKFM8d.jpg" alt="Exaple" width="320" height="160">
+* You will receive money to your qiwi wallet
