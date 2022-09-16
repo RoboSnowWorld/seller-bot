@@ -63,7 +63,7 @@ def buy_tokens(message):
                                       reply_markup=trade_markup)
     bot.send_message(message.chat.id, s.language['buy_accounts'])
 
-@bot.message_handler(regexp='Sell accounts')
+@bot.message_handler(regexp=s.language['sell_accounts_button'])
 def sell_tokens(message):
     bot.send_message(message.chat.id, s.language['sell_accounts'],
                                        reply_markup=trade_markup)
@@ -81,7 +81,9 @@ def buying_process(message):
     number = int(message.text.split(' ')[-1])
     account_name = message.text
     account_name = account_name.split('ba ')[1]
-    account_name = account_name.split(f' {str(number)}')[0]
+    account_name = account_name.split(f' ')
+    del account_name[-1]
+    account_name = ' '.join(account_name)
     try:
         account_types[account_name]
     except KeyError:
